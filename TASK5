@@ -1,0 +1,72 @@
+import streamlit as st
+import pandas as pd
+import os
+
+st.set_page_config(page_title="Contact Book", layout="centered")
+
+FILE = "contacts.csv"
+
+if os.path.exists(FILE):
+    df = pd.read_csv(FILE)
+else:
+    df = pd.DataFrame(columns=["Name", "Phone", "Email", "Address"])
+
+st.title("Contact Book Application")
+
+st.subheader("Add New Contact")
+
+name = st.text_input("Name")
+phone = st.text_input("Phone Number")
+email = st.text_input("Email")
+address = st.text_area("Address")
+
+if st.button("Save Contact"):
+    if name and phone:
+        df.loc[len(df)] = [name, phone, email, address]
+        df.to_csv(FILE, index=False)
+        st.success("Contact added successfully!")
+    else:
+        st.warning("Name and Phone are required")
+
+st.subheader("Search Contact")
+search = st.text_input("Search by Name or Phone")
+
+if search:
+    filtered_df = df[
+        df["Name"].str.contains(search, case=False, na=False) |
+        df["Phone"].astype(str).str.contains(search, case=False, na=False)
+    ]
+else:
+    filtered_df = df
+
+st.subheader("Contact List")
+st.dataframe(filtered_df, use_container_width=True)
+
+st.subheader("Update Contact")
+
+if not df.empty:
+    selected_name = st.selectbox("Select Contact to Update", df["Name"])
+
+    contact = df[df["Name"] == selected_name].iloc[0]
+
+    new_name = st.text_input("Name", contact["Name"])
+    new_phone = st.text_input("Phone", contact["Phone"])
+    new_email = st.text_input("Email", contact["Email"])
+    new_address = st.text_area("Address", contact["Address"])
+
+    if st.button("Update Contact"):
+        df.loc[df["Name"] == selected_name] = [
+            new_name, new_phone, new_email, new_address
+        ]
+        df.to_csv(FILE, index=False)
+        st.success("Contact updated successfully!")
+
+st.subheader("Delete Contact")
+
+if not df.empty:
+    delete_name = st.selectbox("Select Contact to Delete", df["Name"], key="delete")
+
+    if st.button("Delete Selected Contact"):
+        df = df[df["Name"] != delete_name]
+        df.to_csv(FILE, index=False)
+        st.error("Contact deleted successfully!")
