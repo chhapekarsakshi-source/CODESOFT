@@ -1,0 +1,39 @@
+import streamlit as st
+import pandas as pd
+import os
+
+st.set_page_config(page_title="To-Do List", layout="centered")
+
+st.title("To-Do List App")
+
+FILE = "tasks.csv"
+
+if os.path.exists(FILE):
+    df = pd.read_csv(FILE)
+else:
+    df = pd.DataFrame(columns=["Task", "Status"])
+
+task = st.text_input("Enter a new task")
+
+if st.button("Add Task"):
+    if task.strip():
+        df.loc[len(df)] = [task, "Pending"]
+        df.to_csv(FILE, index=False)
+        st.success("Task added!")
+
+st.subheader("Your Tasks")
+
+for i in df.index:
+    col1, col2, col3 = st.columns([5, 2, 2])
+
+    col1.write(df.loc[i, "Task"])
+    col2.write(df.loc[i, "Status"])
+
+    if col3.button("Done", key=f"done{i}"):
+        df.loc[i, "Status"] = "Completed"
+        df.to_csv(FILE, index=False)
+
+if st.button("Delete Completed Tasks"):
+    df = df[df["Status"] != "Completed"]
+    df.to_csv(FILE, index=False)
+    st.warning("Completed tasks deleted")
