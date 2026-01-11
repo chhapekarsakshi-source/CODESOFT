@@ -1,0 +1,27 @@
+import streamlit as st
+import random
+import string
+
+st.set_page_config(page_title="Password Generator", layout="centered")
+
+st.title("Password Generator")
+
+length = st.slider("Password Length", min_value=6, max_value=30, value=12)
+
+complexity = st.selectbox(
+    "Select Password Complexity",
+    ["Low", "Medium", "High"]
+)
+
+if complexity == "Low":
+    characters = string.ascii_lowercase
+elif complexity == "Medium":
+    characters = string.ascii_letters + string.digits
+else:  # High
+    characters = string.ascii_letters + string.digits + string.punctuation
+
+if st.button("Generate Password"):
+    password = "".join(random.choice(characters) for _ in range(length))
+    st.success(password)
+
+    st.caption(f"Complexity Level: {complexity}")
